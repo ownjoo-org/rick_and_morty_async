@@ -1,0 +1,4 @@
+funcy
+requests
+
+ownjoo_utils @ git+https://github.com/ownjoo-org/utils.git
