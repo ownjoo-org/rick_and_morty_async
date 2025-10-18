@@ -1,4 +1,4 @@
-# template_cli
+# rick_and_morty_async
 test query API:
 
 # usage

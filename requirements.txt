@@ -1,4 +1,4 @@
 funcy
-requests
+httpx
 
 ownjoo_utils @ git+https://github.com/ownjoo-org/utils.git

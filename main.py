@@ -1,30 +1,36 @@
 import argparse
 import json
 import logging
+from asyncio import run
 from sys import stderr
 from typing import Optional
 
 from ownjoo_utils.logging.consts import LOG_FORMAT
 from ownjoo_utils.parsing.consts import TimeFormats
 
-from template_cli.main import main
+from rick_and_morty_async.client import get_data
+
+
+async def main():
+    endl = ''
+    print('[')
+    async for result in get_data(
+            domain=args.domain,
+            proxies=proxies,
+    ):
+        print(f'{endl}{json.dumps(result, indent=4)}', sep='')
+        endl = ',\n'
+    print(']')
+
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        '--api-key',
-        default=None,
-        type=str,
-        required=True,
-        help='The API key',
-        dest='api_key',
-    )
-    parser.add_argument(
         '--domain',
         default='example.com',
         type=str,
-        required=False,
+        required=True,
         help='The FQDN for your API (not full URL)',
     )
     parser.add_argument(
@@ -59,7 +65,4 @@ if __name__ == '__main__':
         except Exception as exc_json:
             logger.warning(f'failure parsing proxies: {exc_json}: proxies provided: {proxies}')
 
-    print('[')
-    for result in main(domain=args.domain, api_key=args.api_key, proxies=proxies):
-        print(f'{json.dumps(result, indent=4)},')
-    print(']')
+    run(main())
