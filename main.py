@@ -1,7 +1,7 @@
 import argparse
 import json
 import logging
-from asyncio import run
+from asyncio import run, gather, Queue
 from sys import stderr
 from typing import Optional
 
@@ -9,19 +9,15 @@ from ownjoo_utils.logging.consts import LOG_FORMAT
 from ownjoo_utils.parsing.consts import TimeFormats
 
 from rick_and_morty_async.client import get_data
+from rick_and_morty_async.parser import parse
 
 
 async def main():
-    endl = ''
-    print('[')
-    async for result in get_data(
-            domain=args.domain,
-            proxies=proxies,
-    ):
-        print(f'{endl}{json.dumps(result, indent=4)}', sep='')
-        endl = ',\n'
-    print(']')
-
+    q = Queue(maxsize=10)
+    await gather(
+        get_data(domain=args.domain, proxies=proxies, q=q),
+        parse(q=q),
+    )
 
 
 if __name__ == '__main__':

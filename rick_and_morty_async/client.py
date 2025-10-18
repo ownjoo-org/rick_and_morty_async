@@ -1,5 +1,5 @@
 import logging
-from asyncio import sleep
+from asyncio import sleep, Queue
 from typing import AsyncGenerator, Optional
 
 from httpx import AsyncClient, Client, Response
@@ -48,7 +48,8 @@ async def list_results(
 async def get_data(
     domain: str,
     proxies: Optional[dict] = None,
-) -> AsyncGenerator[dict, None]:
+    q: Optional[Queue] = None,
+) -> None:
     global C
     async with AsyncClient(follow_redirects=True) as C:
         if isinstance(proxies, dict):
@@ -65,12 +66,13 @@ async def get_data(
         C.verify = False  # for convenience...  evaluate for yourself if this is acceptable.
 
         r = await anext(list_results(url=domain))
-        print(f'\n\n{r}\n\n')
         async for character in list_results(url=get_value(src=r, path=['characters'], exp=str)):
-            yield character
+            await q.put(character)
 
         async for location in list_results(url=get_value(src=r, path=['locations'], exp=str)):
-            yield location
+            await q.put(location)
 
         async for episode in list_results(url=get_value(src=r, path=['episodes'], exp=str)):
-            yield episode
+            await q.put(episode)
+
+        await q.put(None)
