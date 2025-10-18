@@ -19,9 +19,12 @@ async def main():
         list_locations(domain=args.domain, proxies=proxies, q=q),
         list_episodes(domain=args.domain, proxies=proxies, q=q),
     ]
+    parser_coroutines: List[Coroutine] = [
+        json_out(q=q, subscriber_count=len(client_coroutines)),
+    ]
     await gather(
         *client_coroutines,
-        json_out(q=q, subscriber_count=len(client_coroutines)),
+        *parser_coroutines,
     )
 
 
