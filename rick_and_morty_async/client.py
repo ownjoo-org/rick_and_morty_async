@@ -87,21 +87,21 @@ async def list_results(
 
 
 async def list_characters(domain: str, proxies: Optional[dict] = None, q: Optional[Queue] = None) -> None:
-    r = await get_response(url=domain, proxies=proxies)
+    r: dict = await get_response(url=domain, proxies=proxies)
     async for character in list_results(url=get_value(src=r, path=['characters'], exp=str, default=[]), proxies=proxies):
         await q.put(character)
     await q.put(None)  # counting these in the parser so we know when parsing should stop pulling from queue
 
 
 async def list_locations(domain: str, proxies: Optional[dict] = None, q: Optional[Queue] = None) -> None:
-    r = await get_response(url=domain, proxies=proxies)
+    r: dict = await get_response(url=domain, proxies=proxies)
     async for location in list_results(url=get_value(src=r, path=['locations'], exp=str, default=[]), proxies=proxies):
         await q.put(location)
     await q.put(None)  # counting these in the parser so we know when parsing should stop pulling from queue
 
 
 async def list_episodes(domain: str, proxies: Optional[dict] = None, q: Optional[Queue] = None) -> None:
-    r = await get_response(url=domain, proxies=proxies)
+    r: dict = await get_response(url=domain, proxies=proxies)
     async for episode in list_results(url=get_value(src=r, path=['episodes'], exp=str), proxies=proxies):
         await q.put(episode)
     await q.put(None)  # counting these in the parser so we know when parsing should stop pulling from queue
