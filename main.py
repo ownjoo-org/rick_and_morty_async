@@ -1,25 +1,27 @@
 import argparse
 import json
 import logging
-from asyncio import run, gather, Queue
+from asyncio import Queue, gather, run
 from sys import stderr
-from typing import Optional
+from typing import Coroutine, List, Optional
 
 from ownjoo_utils.logging.consts import LOG_FORMAT
 from ownjoo_utils.parsing.consts import TimeFormats
-
-from rick_and_morty_async.client import get_data, get_characters, get_locations, get_episodes
-from rick_and_morty_async.parser import parse
+from rick_and_morty_async.client import list_characters, get_data, list_episodes, list_locations, list_results
+from rick_and_morty_async.parser import json_out
 
 
 async def main():
     q = Queue(maxsize=10)
-    await gather(
+    client_coroutines: List[Coroutine] = [
         # get_data(domain=args.domain, proxies=proxies, q=q),
-        get_characters(domain=args.domain, proxies=proxies, q=q),
-        get_locations(domain=args.domain, proxies=proxies, q=q),
-        get_episodes(domain=args.domain, proxies=proxies, q=q),
-        parse(q=q),
+        list_characters(domain=args.domain, proxies=proxies, q=q),
+        list_locations(domain=args.domain, proxies=proxies, q=q),
+        list_episodes(domain=args.domain, proxies=proxies, q=q),
+    ]
+    await gather(
+        *client_coroutines,
+        json_out(q=q, subscriber_count=len(client_coroutines)),
     )
 
 

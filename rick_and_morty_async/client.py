@@ -19,20 +19,19 @@ async def get_response(
         data: Optional[dict] = None,
         proxies: Optional[dict] = None,
 ) -> Optional[dict]:
-    """Fetch URL with retries on failure, including exponential backoff."""
-    async with AsyncClient(follow_redirects=True) as C:
+    async with AsyncClient(follow_redirects=True) as session:  # TODO: this will need to be a 1-time thing
         try:
             if isinstance(proxies, dict):
-                C.proxies = proxies
-            C.headers.update(
+                session.proxies = proxies
+            session.headers.update(
                 {
                     'Accept': 'application/json',
                     'Content-Type': 'application/json',
                 }
             )
-            C.verify = False  # for convenience...  evaluate for yourself if this is acceptable.
+            session.verify = False  # for convenience...  evaluate for yourself if this is acceptable.
 
-            r: Response = await C.request(
+            r: Response = await session.request(
                 method=method or 'get',
                 url=url,
                 data=data,
@@ -40,7 +39,6 @@ async def get_response(
                 params=params,
                 timeout=30,
             )
-            print(f'STATUS_CODE: {r.status_code}')
             r.raise_for_status()
             return r.json()
         except HTTPStatusError as exc_status:
@@ -86,22 +84,25 @@ async def list_results(
             yield result
 
 
-async def get_characters(domain: str, proxies: Optional[dict] = None, q: Optional[Queue] = None) -> None:
+async def list_characters(domain: str, proxies: Optional[dict] = None, q: Optional[Queue] = None) -> None:
     r = await get_response(url=domain, proxies=proxies)
     async for character in list_results(url=get_value(src=r, path=['characters'], exp=str, default=[]), proxies=proxies):
         await q.put(character)
+    await q.put(None)  # counting these in the parser so we know when parsing should stop pulling from queue
 
 
-async def get_locations(domain: str, proxies: Optional[dict] = None, q: Optional[Queue] = None) -> None:
+async def list_locations(domain: str, proxies: Optional[dict] = None, q: Optional[Queue] = None) -> None:
     r = await get_response(url=domain, proxies=proxies)
     async for location in list_results(url=get_value(src=r, path=['locations'], exp=str, default=[]), proxies=proxies):
         await q.put(location)
+    await q.put(None)  # counting these in the parser so we know when parsing should stop pulling from queue
 
 
-async def get_episodes(domain: str, proxies: Optional[dict] = None, q: Optional[Queue] = None) -> None:
+async def list_episodes(domain: str, proxies: Optional[dict] = None, q: Optional[Queue] = None) -> None:
     r = await get_response(url=domain, proxies=proxies)
     async for episode in list_results(url=get_value(src=r, path=['episodes'], exp=str), proxies=proxies):
         await q.put(episode)
+    await q.put(None)  # counting these in the parser so we know when parsing should stop pulling from queue
 
 
 async def get_data(
