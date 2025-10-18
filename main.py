@@ -8,14 +8,17 @@ from typing import Optional
 from ownjoo_utils.logging.consts import LOG_FORMAT
 from ownjoo_utils.parsing.consts import TimeFormats
 
-from rick_and_morty_async.client import get_data
+from rick_and_morty_async.client import get_data, get_characters, get_locations, get_episodes
 from rick_and_morty_async.parser import parse
 
 
 async def main():
     q = Queue(maxsize=10)
     await gather(
-        get_data(domain=args.domain, proxies=proxies, q=q),
+        # get_data(domain=args.domain, proxies=proxies, q=q),
+        get_characters(domain=args.domain, proxies=proxies, q=q),
+        get_locations(domain=args.domain, proxies=proxies, q=q),
+        get_episodes(domain=args.domain, proxies=proxies, q=q),
         parse(q=q),
     )
 
