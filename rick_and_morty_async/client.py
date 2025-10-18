@@ -7,6 +7,8 @@ from ownjoo_utils import get_value
 from ownjoo_utils.logging.decorators import timed_async_generator
 from retry_async import retry
 
+from rick_and_morty_async.consts import PAGE_SIZE
+
 logger = logging.getLogger(__name__)
 
 
@@ -70,14 +72,14 @@ async def list_results(
     should_continue: bool = True
     params: dict = {
         'page': 0,
-        'count': 10,
+        'count': PAGE_SIZE,
     }
     if isinstance(additional_params, dict):
         params.update(additional_params)
     while should_continue:
         data_raw: dict = await get_response(method='get', url=url, params=params, proxies=proxies)
         results: list[dict] = get_value(src=data_raw, path=['results'], exp=list, default=[])
-        if not results or len(results) < 10:
+        if not results or len(results) < PAGE_SIZE:
             should_continue = False
         params['page'] += 1
         for result in results:
