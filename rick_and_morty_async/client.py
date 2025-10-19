@@ -87,7 +87,6 @@ async def list_results_paginated(
             yield result
 
 
-# @timed_async_generator(log_progress=False, log_level=logging.DEBUG, logger=logger)
 async def list_results(
     url: str,
     additional_params: Optional[dict] = None,

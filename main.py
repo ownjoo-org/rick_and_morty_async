@@ -7,13 +7,15 @@ from typing import Coroutine, List, Optional
 
 from ownjoo_utils.logging.consts import LOG_FORMAT
 from ownjoo_utils.parsing.consts import TimeFormats
-from rick_and_morty_async.client import list_characters_paginated, get_data, list_episodes_paginated, \
-    list_locations_paginated, list_results_paginated, list_characters, list_locations, list_episodes
+from rick_and_morty_async.client import (
+    get_data, list_characters, list_characters_paginated, list_episodes,
+    list_episodes_paginated, list_locations, list_locations_paginated, list_results_paginated,
+)
 from rick_and_morty_async.parser import json_out
 
 
 async def main():
-    q = Queue(maxsize=10)
+    q = Queue(maxsize=100)
     client_coroutines: List[Coroutine] = [
         # get_data(domain=args.domain, proxies=proxies, q=q),
         # list_characters_paginated(domain=args.domain, proxies=proxies, q=q),
