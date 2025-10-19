@@ -8,4 +8,9 @@ build-backend = "setuptools.build_meta"
 name = "project_name"
 version = "0.0.1"
 dependencies = [
+    "retry-async",
+    "funcy",
+    "httpx",
+    "httpx[http2]",
+    "ownjoo_utils @ git+https://github.com/ownjoo-org/utils.git",
 ]
