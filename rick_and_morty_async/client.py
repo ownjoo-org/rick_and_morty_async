@@ -1,11 +1,14 @@
 import logging
-from asyncio import Queue
+from asyncio import Queue, get_running_loop
+from sys import stderr
 from typing import AsyncGenerator, Optional
 
 from httpx import AsyncClient, HTTPError, HTTPStatusError, Response
 from ownjoo_utils import get_value
 from ownjoo_utils.logging.decorators import timed_async_generator
 from retry_async import retry
+
+from rick_and_morty_async.tracker import contributing_tasks
 
 logger = logging.getLogger(__name__)
 
@@ -63,13 +66,14 @@ async def get_response(
 
 
 @timed_async_generator(log_progress=False, log_level=logging.DEBUG, logger=logger)
-async def list_results(
-    url: str, additional_params: Optional[dict] = None,
+async def list_results_paginated(
+    url: str,
+    additional_params: Optional[dict] = None,
     proxies: Optional[dict] = None,
 ) -> AsyncGenerator[dict, None]:
     should_continue: bool = True
     params: dict = {
-        'page': 0,
+        'page': 1,
     }
     if isinstance(additional_params, dict):
         params.update(additional_params)
@@ -83,25 +87,133 @@ async def list_results(
             yield result
 
 
-async def list_characters(domain: str, proxies: Optional[dict] = None, q: Optional[Queue] = None) -> None:
+# @timed_async_generator(log_progress=False, log_level=logging.DEBUG, logger=logger)
+async def list_results(
+    url: str,
+    additional_params: Optional[dict] = None,
+    proxies: Optional[dict] = None,
+    q: Optional[Queue] = None,
+) -> None:
+    params: dict = {}
+    if isinstance(additional_params, dict):
+        params.update(additional_params)
+    data_raw: dict = await get_response(method='get', url=url, params=params, proxies=proxies)
+    for result in get_value(src=data_raw, path=['results'], exp=list, default=[]):
+        await q.put(result)
+
+
+async def list_characters(url: str, proxies: Optional[dict] = None, q: Optional[Queue] = None) -> None:
+    loop = get_running_loop()
+    r: dict = await get_response(url=url, proxies=proxies)
+    chars_url: str = get_value(src=r, path=['characters'], exp=str, default=[])
+    chars: dict = await get_response(
+        url=chars_url,
+        proxies=proxies,
+    )
+    pages: int = get_value(src=chars, path=['info', 'pages'], exp=int, default=0)
+    if pages:
+        for page in range(1, pages + 1):
+            task = loop.create_task(
+                list_results(
+                    url=chars_url,
+                    additional_params={'page': page},
+                    proxies=proxies,
+                    q=q,
+                )
+            )
+            contributing_tasks.append(task.get_name())
+            task.add_done_callback(
+                lambda contributing_task: contributing_tasks.pop(
+                    contributing_tasks.index(contributing_task.get_name())
+                )
+            )
+            task.add_done_callback(lambda contributing_task: contributing_task.cancel())
+
+
+async def list_characters_paginated(domain: str, proxies: Optional[dict] = None, q: Optional[Queue] = None) -> None:
     r: dict = await get_response(url=domain, proxies=proxies)
-    async for character in list_results(url=get_value(src=r, path=['characters'], exp=str, default=[]), proxies=proxies):
+    async for character in list_results_paginated(
+        url=get_value(src=r, path=['characters'], exp=str, default=[]),
+        proxies=proxies,
+    ):
         await q.put(character)
-    await q.put(None)  # counting these in the parser so we know when parsing should stop pulling from queue
+    # await q.put(None)  # counting these in the parser so we know when parsing should stop pulling from queue
 
 
-async def list_locations(domain: str, proxies: Optional[dict] = None, q: Optional[Queue] = None) -> None:
+async def list_locations_paginated(domain: str, proxies: Optional[dict] = None, q: Optional[Queue] = None) -> None:
     r: dict = await get_response(url=domain, proxies=proxies)
-    async for location in list_results(url=get_value(src=r, path=['locations'], exp=str, default=[]), proxies=proxies):
+    async for location in list_results_paginated(
+            url=get_value(src=r, path=['locations'], exp=str, default=[]),
+            proxies=proxies,
+    ):
         await q.put(location)
-    await q.put(None)  # counting these in the parser so we know when parsing should stop pulling from queue
+    # await q.put(None)  # counting these in the parser so we know when parsing should stop pulling from queue
 
 
-async def list_episodes(domain: str, proxies: Optional[dict] = None, q: Optional[Queue] = None) -> None:
+async def list_locations(url: str, proxies: Optional[dict] = None, q: Optional[Queue] = None) -> None:
+    loop = get_running_loop()
+    r: dict = await get_response(url=url, proxies=proxies)
+    locations_url: str = get_value(src=r, path=['locations'], exp=str, default=[])
+    locations: dict = await get_response(
+        url=locations_url,
+        proxies=proxies,
+    )
+    pages: int = get_value(src=locations, path=['info', 'pages'], exp=int, default=0)
+    if pages:
+        for page in range(1, pages + 1):
+            task = loop.create_task(
+                list_results(
+                    url=locations_url,
+                    additional_params={'page': page},
+                    proxies=proxies,
+                    q=q,
+                )
+            )
+            contributing_tasks.append(task.get_name())
+            task.add_done_callback(
+                lambda contributing_task: contributing_tasks.pop(
+                    contributing_tasks.index(contributing_task.get_name())
+                )
+            )
+            task.add_done_callback(lambda contributing_task: contributing_task.cancel())
+
+
+async def list_episodes_paginated(domain: str, proxies: Optional[dict] = None, q: Optional[Queue] = None) -> None:
     r: dict = await get_response(url=domain, proxies=proxies)
-    async for episode in list_results(url=get_value(src=r, path=['episodes'], exp=str), proxies=proxies):
+    async for episode in list_results_paginated(
+            url=get_value(src=r, path=['episodes'], exp=str),
+            proxies=proxies,
+    ):
         await q.put(episode)
-    await q.put(None)  # counting these in the parser so we know when parsing should stop pulling from queue
+    # await q.put(None)  # counting these in the parser so we know when parsing should stop pulling from queue
+
+
+async def list_episodes(url: str, proxies: Optional[dict] = None, q: Optional[Queue] = None) -> None:
+    loop = get_running_loop()
+    r: dict = await get_response(url=url, proxies=proxies)
+    episodes_url: str = get_value(src=r, path=['episodes'], exp=str, default=[])
+    episodes: dict = await get_response(
+        url=episodes_url,
+        proxies=proxies,
+    )
+    pages: int = get_value(src=episodes, path=['info', 'pages'], exp=int, default=0)
+    if pages:
+        for page in range(1, pages + 1):
+            task = loop.create_task(
+                list_results(
+                    url=episodes_url,
+                    additional_params={'page': page},
+                    proxies=proxies,
+                    q=q,
+                )
+            )
+            contributing_tasks.append(task.get_name())
+            task.add_done_callback(
+                lambda contributing_task: contributing_tasks.pop(
+                    contributing_tasks.index(contributing_task.get_name())
+                )
+            )
+            task.add_done_callback(lambda contributing_task: contributing_task.cancel())
 
 
 async def get_data(
@@ -110,13 +222,13 @@ async def get_data(
     q: Optional[Queue] = None,
 ) -> None:
     r = await get_response(url=domain, proxies=proxies)
-    async for character in list_results(url=get_value(src=r, path=['characters'], exp=str), proxies=proxies):
+    async for character in list_results_paginated(url=get_value(src=r, path=['characters'], exp=str), proxies=proxies):
         await q.put(character)
 
-    async for location in list_results(url=get_value(src=r, path=['locations'], exp=str), proxies=proxies):
+    async for location in list_results_paginated(url=get_value(src=r, path=['locations'], exp=str), proxies=proxies):
         await q.put(location)
 
-    async for episode in list_results(url=get_value(src=r, path=['episodes'], exp=str), proxies=proxies):
+    async for episode in list_results_paginated(url=get_value(src=r, path=['episodes'], exp=str), proxies=proxies):
         await q.put(episode)
 
-    await q.put(None)
+    # await q.put(None)

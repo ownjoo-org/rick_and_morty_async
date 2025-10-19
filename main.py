@@ -7,7 +7,8 @@ from typing import Coroutine, List, Optional
 
 from ownjoo_utils.logging.consts import LOG_FORMAT
 from ownjoo_utils.parsing.consts import TimeFormats
-from rick_and_morty_async.client import list_characters, get_data, list_episodes, list_locations, list_results
+from rick_and_morty_async.client import list_characters_paginated, get_data, list_episodes_paginated, \
+    list_locations_paginated, list_results_paginated, list_characters, list_locations, list_episodes
 from rick_and_morty_async.parser import json_out
 
 
@@ -15,16 +16,20 @@ async def main():
     q = Queue(maxsize=10)
     client_coroutines: List[Coroutine] = [
         # get_data(domain=args.domain, proxies=proxies, q=q),
-        list_characters(domain=args.domain, proxies=proxies, q=q),
-        list_locations(domain=args.domain, proxies=proxies, q=q),
-        list_episodes(domain=args.domain, proxies=proxies, q=q),
+        # list_characters_paginated(domain=args.domain, proxies=proxies, q=q),
+        # list_locations_paginated(domain=args.domain, proxies=proxies, q=q),
+        # list_episodes_paginated(domain=args.domain, proxies=proxies, q=q),
+        list_characters(url=args.domain, proxies=proxies, q=q),
+        list_locations(url=args.domain, proxies=proxies, q=q),
+        list_episodes(url=args.domain, proxies=proxies, q=q),
     ]
     parser_coroutines: List[Coroutine] = [
-        json_out(q=q, subscriber_count=len(client_coroutines)),
+        json_out(q=q),
     ]
     await gather(
         *client_coroutines,
         *parser_coroutines,
+        q.join(),
     )
 
 
