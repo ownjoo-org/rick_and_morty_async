@@ -20,7 +20,7 @@ async def json_out(q: Queue) -> None:
             if result:
                 print(f'{endl}{dumps(result, indent=4)}', end='')
                 endl = ',\n'  # prepend to this line the previous line's endl (no trailing ',' for JSON correctness)
+                q.task_done()
         except TimeoutError:
             logger.debug(f'CONTRIBUTING TASKS: Timeout: {contributing_tasks=}')
     print('\n]')
-    q.task_done()

@@ -1,11 +1,10 @@
 import logging
 from asyncio import Queue, get_running_loop
-from sys import stderr
 from typing import AsyncGenerator, Optional
 
 from httpx import AsyncClient, HTTPError, HTTPStatusError, Response
-from ownjoo_utils import get_value
-from ownjoo_utils.logging.decorators import timed_async_generator
+from ownjoo_toolkit import get_value
+from ownjoo_toolkit.logging.decorators import timed_async_generator
 from retry_async import retry
 
 from rick_and_morty_async.tracker import contributing_tasks

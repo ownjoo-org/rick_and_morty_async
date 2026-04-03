@@ -12,5 +12,11 @@ dependencies = [
     "funcy",
     "httpx",
     "httpx[http2]",
-    "ownjoo_utils @ git+https://github.com/ownjoo-org/utils.git",
+    "ownjoo-toolkit",
+]
+
+[project.optional-dependencies]
+test = [
+    "pytest",
+    "pytest-asyncio",
 ]
