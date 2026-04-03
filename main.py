@@ -70,10 +70,10 @@ if __name__ == '__main__':
     logger = logging.getLogger(__name__)
 
     proxies: Optional[dict] = None
-    if proxies:
+    if args.proxies:
         try:
             proxies: dict = json.loads(args.proxies)
         except Exception as exc_json:
-            logger.warning(f'failure parsing proxies: {exc_json}: proxies provided: {proxies}')
+            logger.warning(f'failure parsing proxies: {exc_json}: proxies provided: {args.proxies}')
 
     run(main())
