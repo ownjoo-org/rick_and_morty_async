@@ -18,11 +18,10 @@ dependencies = [
 
 [project.optional-dependencies]
 test = [
-    "pytest",
-    "pytest-asyncio",
+    "pytest>=7.0",
+    "pytest-asyncio>=0.21.0",
+    "pytest-cov>=4.0",
 ]
-
-[project.optional-dependencies]
 dev = [
     "pytest>=7.0",
     "pytest-cov>=4.0",
@@ -64,5 +63,5 @@ disallow_incomplete_defs = true
 
 [tool.pytest.ini_options]
 testpaths = ["test"]
-addopts = "--cov=rick_and_morty_async --cov-report=html --cov-report=term-missing"
+addopts = ""
 asyncio_mode = "auto"

@@ -7,9 +7,9 @@ An async Python client for the [Rick and Morty API](https://rickandmortyapi.com/
 - **Async HTTP Client** — Uses `httpx` with HTTP/2 support for concurrent API requests
 - **Automatic Retries** — Built-in retry logic with exponential backoff via `retry-async`
 - **Queue-Based Coordination** — Coordinates concurrent fetchers (characters, locations, episodes) with output parser using `asyncio.Queue`
-- **Structured Logging** — Integration with `ownjoo-org/utils` logging utilities
+- **Structured Logging** — Integration with `ownjoo-toolkit` logging utilities
 - **Type-Safe** — Full type hints with mypy validation
-- **Comprehensive Testing** — Unit and integration tests with pytest
+- **Comprehensive Testing** — Unit and integration tests with `unittest.IsolatedAsyncioTestCase`
 
 ## Setup
 
@@ -77,8 +77,8 @@ make install-dev      # Install development dependencies
 make lint             # Run linting checks
 make format           # Format code with black
 make type-check       # Run type checking with mypy
-make test             # Run tests
-make test-cov         # Run tests with coverage report
+make test             # Run test
+make test-cov         # Run test with coverage report
 make clean            # Remove build artifacts and caches
 make run              # Show CLI help
 ```
@@ -93,7 +93,7 @@ pytest
 pytest --cov=rick_and_morty_async
 
 # Run specific test file
-pytest test/unit/test_client.py -v
+pytest tests/test_client.py -v
 ```
 
 ### Code Quality
@@ -103,8 +103,8 @@ The project uses:
 - **black** for code formatting
 - **ruff** for linting
 - **mypy** for type checking
-- **pytest** for testing
-- **pytest-asyncio** for async test support
+- **pytest** for test discovery and running
+- **unittest.IsolatedAsyncioTestCase** for async test support
 
 All checks run automatically in the CI/CD pipeline (GitHub Actions).
 

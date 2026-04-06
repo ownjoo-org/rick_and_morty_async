@@ -5,11 +5,12 @@ from asyncio import Queue, gather, run
 from sys import stderr
 from typing import Coroutine, List, Optional
 
-from ownjoo_toolkit.logging.consts import LOG_FORMAT
-from ownjoo_toolkit.parsing.consts import TimeFormats
+from oj_toolkit.logging.consts import LOG_FORMAT
+from oj_toolkit.parsing.consts import TimeFormats
+
 from rick_and_morty_async.client import (
-    get_data, list_characters, list_characters_paginated, list_episodes,
-    list_episodes_paginated, list_locations, list_locations_paginated, list_results_paginated,
+    get_data, list_characters, list_characters_paginated, list_episodes, list_episodes_paginated, list_locations,
+    list_locations_paginated, list_results_paginated
 )
 from rick_and_morty_async.parser import json_out
 

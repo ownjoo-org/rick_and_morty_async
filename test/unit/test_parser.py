@@ -1,6 +1,6 @@
-import pytest
+import unittest
 from asyncio import Queue
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 
 from rick_and_morty_async.parser import json_out
 
@@ -16,14 +16,12 @@ class MockTaskList(list):
 
     def __bool__(self):
         self.call_count += 1
-        # Return True for first few calls, then False to exit loop
         if self.call_count > 3:
             return False
         return len(self) > 0
 
 
-class TestJsonOut:
-    @pytest.mark.asyncio
+class TestJsonOut(unittest.IsolatedAsyncioTestCase):
     async def test_json_out_single_result(self):
         """Test json_out with single result."""
         q = Queue()
@@ -39,12 +37,10 @@ class TestJsonOut:
                 except Exception:
                     pass
 
-                # Verify output started with '['
                 calls = [str(call) for call in mock_print.call_args_list]
                 output = ''.join(calls)
-                assert '[' in output
+                self.assertIn('[', output)
 
-    @pytest.mark.asyncio
     async def test_json_out_multiple_results(self):
         """Test json_out with multiple results."""
         q = Queue()
@@ -64,8 +60,10 @@ class TestJsonOut:
                 except Exception:
                     pass
 
-                # Verify output
                 calls = [str(call) for call in mock_print.call_args_list]
                 output = ''.join(calls)
-                assert '[' in output
+                self.assertIn('[', output)
 
+
+if __name__ == '__main__':
+    unittest.main()
