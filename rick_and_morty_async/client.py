@@ -3,8 +3,8 @@ from asyncio import Queue, get_running_loop
 from typing import AsyncGenerator, Optional
 
 from httpx import AsyncClient, HTTPError, HTTPStatusError, Response
-from ownjoo_toolkit import get_value
-from ownjoo_toolkit.logging.decorators import timed_async_generator
+from oj_toolkit import dig
+from oj_toolkit.logging.decorators import timed_async_generator
 from retry_async import retry
 
 from rick_and_morty_async.tracker import contributing_tasks
@@ -78,8 +78,8 @@ async def list_results_paginated(
         params.update(additional_params)
     while should_continue:
         data_raw: dict = await get_response(method='get', url=url, params=params, proxies=proxies)
-        results: list[dict] = get_value(src=data_raw, path=['results'], exp=list, default=[])
-        if not results or not get_value(src=data_raw, path=['info', 'next'], exp=str):
+        results: list[dict] = dig(src=data_raw, path='results', exp=list, default=[])
+        if not results or not dig(src=data_raw, path='info.next', exp=str):
             should_continue = False
         params['page'] += 1
         for result in results:
@@ -96,19 +96,19 @@ async def list_results(
     if isinstance(additional_params, dict):
         params.update(additional_params)
     data_raw: dict = await get_response(method='get', url=url, params=params, proxies=proxies)
-    for result in get_value(src=data_raw, path=['results'], exp=list, default=[]):
+    for result in dig(src=data_raw, path='results', exp=list, default=[]):
         await q.put(result)
 
 
 async def list_characters(url: str, proxies: Optional[dict] = None, q: Optional[Queue] = None) -> None:
     loop = get_running_loop()
     r: dict = await get_response(url=url, proxies=proxies)
-    chars_url: str = get_value(src=r, path=['characters'], exp=str, default=[])
+    chars_url: str = dig(src=r, path='characters', exp=str, default=[])
     chars: dict = await get_response(
         url=chars_url,
         proxies=proxies,
     )
-    pages: int = get_value(src=chars, path=['info', 'pages'], exp=int, default=0)
+    pages: int = dig(src=chars, path='info.pages', exp=int, default=0)
     if pages:
         for page in range(1, pages + 1):
             task = loop.create_task(
@@ -131,7 +131,7 @@ async def list_characters(url: str, proxies: Optional[dict] = None, q: Optional[
 async def list_characters_paginated(domain: str, proxies: Optional[dict] = None, q: Optional[Queue] = None) -> None:
     r: dict = await get_response(url=domain, proxies=proxies)
     async for character in list_results_paginated(
-        url=get_value(src=r, path=['characters'], exp=str, default=[]),
+        url=dig(src=r, path='characters', exp=str, default=[]),
         proxies=proxies,
     ):
         await q.put(character)
@@ -141,7 +141,7 @@ async def list_characters_paginated(domain: str, proxies: Optional[dict] = None,
 async def list_locations_paginated(domain: str, proxies: Optional[dict] = None, q: Optional[Queue] = None) -> None:
     r: dict = await get_response(url=domain, proxies=proxies)
     async for location in list_results_paginated(
-            url=get_value(src=r, path=['locations'], exp=str, default=[]),
+            url=dig(src=r, path='locations', exp=str, default=[]),
             proxies=proxies,
     ):
         await q.put(location)
@@ -151,12 +151,12 @@ async def list_locations_paginated(domain: str, proxies: Optional[dict] = None, 
 async def list_locations(url: str, proxies: Optional[dict] = None, q: Optional[Queue] = None) -> None:
     loop = get_running_loop()
     r: dict = await get_response(url=url, proxies=proxies)
-    locations_url: str = get_value(src=r, path=['locations'], exp=str, default=[])
+    locations_url: str = dig(src=r, path='locations', exp=str, default=[])
     locations: dict = await get_response(
         url=locations_url,
         proxies=proxies,
     )
-    pages: int = get_value(src=locations, path=['info', 'pages'], exp=int, default=0)
+    pages: int = dig(src=locations, path='info.pages', exp=int, default=0)
     if pages:
         for page in range(1, pages + 1):
             task = loop.create_task(
@@ -179,7 +179,7 @@ async def list_locations(url: str, proxies: Optional[dict] = None, q: Optional[Q
 async def list_episodes_paginated(domain: str, proxies: Optional[dict] = None, q: Optional[Queue] = None) -> None:
     r: dict = await get_response(url=domain, proxies=proxies)
     async for episode in list_results_paginated(
-            url=get_value(src=r, path=['episodes'], exp=str),
+            url=dig(src=r, path='episodes', exp=str),
             proxies=proxies,
     ):
         await q.put(episode)
@@ -189,12 +189,12 @@ async def list_episodes_paginated(domain: str, proxies: Optional[dict] = None, q
 async def list_episodes(url: str, proxies: Optional[dict] = None, q: Optional[Queue] = None) -> None:
     loop = get_running_loop()
     r: dict = await get_response(url=url, proxies=proxies)
-    episodes_url: str = get_value(src=r, path=['episodes'], exp=str, default=[])
+    episodes_url: str = dig(src=r, path='episodes', exp=str, default=[])
     episodes: dict = await get_response(
         url=episodes_url,
         proxies=proxies,
     )
-    pages: int = get_value(src=episodes, path=['info', 'pages'], exp=int, default=0)
+    pages: int = dig(src=episodes, path='info.pages', exp=int, default=0)
     if pages:
         for page in range(1, pages + 1):
             task = loop.create_task(
@@ -220,13 +220,13 @@ async def get_data(
     q: Optional[Queue] = None,
 ) -> None:
     r = await get_response(url=domain, proxies=proxies)
-    async for character in list_results_paginated(url=get_value(src=r, path=['characters'], exp=str), proxies=proxies):
+    async for character in list_results_paginated(url=dig(src=r, path='characters', exp=str), proxies=proxies):
         await q.put(character)
 
-    async for location in list_results_paginated(url=get_value(src=r, path=['locations'], exp=str), proxies=proxies):
+    async for location in list_results_paginated(url=dig(src=r, path='locations', exp=str), proxies=proxies):
         await q.put(location)
 
-    async for episode in list_results_paginated(url=get_value(src=r, path=['episodes'], exp=str), proxies=proxies):
+    async for episode in list_results_paginated(url=dig(src=r, path='episodes', exp=str), proxies=proxies):
         await q.put(episode)
 
     # await q.put(None)

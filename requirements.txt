@@ -3,4 +3,4 @@ funcy
 httpx
 httpx[http2]
 
-ownjoo-toolkit
+oj-toolkit>=0.3.0
