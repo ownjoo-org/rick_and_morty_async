@@ -1,6 +1,6 @@
 # rick_and_morty_async
 
-An async Python client for the [Rick and Morty API](https://rickandmortyapi.com/) demonstrating concurrent HTTP patterns with `httpx`, `asyncio`, and `ownjoo-org/utils`.
+An async Python client for the [Rick and Morty API](https://rickandmortyapi.com/) demonstrating concurrent HTTP patterns with `httpx`, `asyncio`, and `ownjoo/utils`.
 
 ## Features
 
@@ -22,7 +22,7 @@ An async Python client for the [Rick and Morty API](https://rickandmortyapi.com/
 
 ```bash
 # Clone the repository
-git clone https://github.com/ownjoo-org/rick_and_morty_async.git
+git clone https://github.com/ownjoo/rick_and_morty_async.git
 cd rick_and_morty_async
 
 # Install development dependencies
@@ -171,14 +171,14 @@ See [CLAUDE.md](CLAUDE.md) for organization standards and best practices.
 
 ## Standards
 
-This project adheres to [ownjoo-org](https://github.com/ownjoo-org) standards:
+This project adheres to [ownjoo](https://github.com/ownjoo) standards:
 
 - **Simplicity First** — Write the simplest code that solves the problem
 - **Integration Testing** — Prefer real dependencies over mocks
 - **Security by Default** — No OWASP Top 10 vulnerabilities
 - **Explicit Commits** — Use conventional commits with clear history
 
-See the [claude configuration hub](https://github.com/ownjoo-org/claude) for full guidelines.
+See the [claude configuration hub](https://github.com/ownjoo/claude) for full guidelines.
 
 ## License
 

@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "rick-and-morty-async"
 version = "0.1.0"
 description = "Async Rick and Morty API client demonstrating concurrent HTTP patterns with httpx and asyncio"
-authors = [{name = "ownjoo-org"}]
+authors = [{name = "ownjoo"}]
 requires-python = ">=3.10"
 dependencies = [
     "retry-async",
