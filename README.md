@@ -1,5 +1,7 @@
 # rick_and_morty_async
 
+[![License](https://img.shields.io/github/license/ownjoo/rick_and_morty_async)](LICENSE)
+
 An async Python client for the [Rick and Morty API](https://rickandmortyapi.com/) demonstrating concurrent HTTP patterns with `httpx`, `asyncio`, and `ownjoo/utils`.
 
 ## Features
