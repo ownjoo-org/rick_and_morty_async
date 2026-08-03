@@ -1,6 +1,7 @@
 # rick_and_morty_async
 
 [![License](https://img.shields.io/github/license/ownjoo/rick_and_morty_async)](LICENSE)
+[![Top language](https://img.shields.io/github/languages/top/ownjoo/rick_and_morty_async)](https://github.com/ownjoo/rick_and_morty_async) [![Stars](https://img.shields.io/github/stars/ownjoo/rick_and_morty_async)](https://github.com/ownjoo/rick_and_morty_async/stargazers) [![Forks](https://img.shields.io/github/forks/ownjoo/rick_and_morty_async)](https://github.com/ownjoo/rick_and_morty_async/forks) [![Issues](https://img.shields.io/github/issues/ownjoo/rick_and_morty_async)](https://github.com/ownjoo/rick_and_morty_async/issues) [![Pull requests](https://img.shields.io/github/issues-pr/ownjoo/rick_and_morty_async)](https://github.com/ownjoo/rick_and_morty_async/pulls)
 
 An async Python client for the [Rick and Morty API](https://rickandmortyapi.com/) demonstrating concurrent HTTP patterns with `httpx`, `asyncio`, and `ownjoo/utils`.
 
